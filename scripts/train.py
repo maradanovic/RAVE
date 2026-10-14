@@ -92,7 +92,7 @@ class EMA(pl.Callback):
                 self.weights[n] = p.data.clone()
                 continue
 
-            self.weights[n] = self.weights[n] * self.factor + p.data * (
+            self.weights[n] = self.weights[n].to(p.device) * self.factor + p.data * (
                 1 - self.factor)
 
     def swap_weights(self, module):
