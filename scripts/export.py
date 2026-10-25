@@ -194,12 +194,17 @@ class ScriptedRAVE(nn_tilde.Module):
         if prior is not None:
             self._has_prior = True
             self.prior_module = prior
+
+            # init cached conv before graphing
+            z = self.prior_module.forward(torch.zeros(1, self.n_channels, self.full_latent_size))
+
             self.register_method(
                 "prior",
                 in_channels=1,
                 in_ratio=prior.ratio,
                 out_channels = self.latent_size,
-                out_ratio=prior.ratio
+                out_ratio=prior.ratio,
+                test_method=False
             )
         else:
             self.prior_module = DumbPrior()
@@ -504,14 +509,10 @@ def main(argv):
     if FLAGS.run is not None:
         logging.info('model found : %s'%FLAGS.run)
         checkpoint = torch.load(FLAGS.run, map_location='cpu')
+        pretrained.load_state_dict(checkpoint["state_dict"], strict=False)
         if FLAGS.ema_weights and "EMA" in checkpoint["callbacks"]:
             pretrained.load_state_dict(
                 checkpoint["callbacks"]["EMA"],
-                strict=False,
-            )
-        else:
-            pretrained.load_state_dict(
-                checkpoint["state_dict"],
                 strict=False,
             )
     else:

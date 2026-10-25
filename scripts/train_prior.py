@@ -76,16 +76,13 @@ def main(argv):
     pretrained = rave.RAVE()
     print('model found : %s'%run)
     checkpoint = torch.load(run, map_location='cpu')
+    pretrained.load_state_dict(checkpoint["state_dict"], strict=False)
     if "EMA" in checkpoint["callbacks"]:
-        pretrained.load_state_dict(
+        result = pretrained.load_state_dict(
             checkpoint["callbacks"]["EMA"],
             strict=False,
         )
-    else:
-        pretrained.load_state_dict(
-            checkpoint["state_dict"],
-            strict=False,
-        )
+        print("EMA keys not matched:", len(result.unexpected_keys))
     pretrained.eval()
     gin.clear_config()
     
